@@ -1,0 +1,3 @@
+# Salin jadi keys.properties (file ini tidak ikut ke git). Dipakai kalau build lokal.
+YT_API_KEY=isi_key_youtube
+GEMINI_API_KEY=isi_key_gemini

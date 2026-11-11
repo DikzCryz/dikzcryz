@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DikzCryz</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="white">
+
+<div id="splash">
+  <video id="introVid" src="intro.mp4" muted autoplay playsinline></video>
+  <div class="splash-in"><div class="brand big" id="splashTitle"></div><div class="sbar"><i id="sbar"></i></div></div>
+</div>
+
+<header id="top" class="neo">
+  <button id="menuBtn" class="ibtn" aria-label="Menu"><span data-ico="menu"></span></button>
+  <div class="brand" id="brand">DikzCryz</div>
+  <span class="sp"></span>
+</header>
+
+<div id="scrim"></div>
+<aside id="side">
+  <div class="side-head">
+    <div class="brand">DikzCryz</div>
+    <button id="sideClose" class="ibtn" aria-label="Tutup"><span data-ico="x"></span></button>
+  </div>
+  <nav class="side-list">
+    <button class="si" id="siAbout"><span data-ico="info"></span><b>Tentang aplikasi</b></button>
+    <div class="about" id="aboutBox">
+      DikzCryz menyatukan asisten AI, pemutar YouTube, dan equalizer dalam satu aplikasi.
+      AI untuk bertanya apa saja, YouTube untuk musik dan video (tetap jalan saat pindah halaman),
+      equalizer untuk mengatur suara dari semua aplikasi.
+    </div>
+    <button class="si" id="siSet"><span data-ico="gear"></span><b>Pengaturan</b></button>
+    <button class="si" id="siWa"><span data-ico="chat"></span><b>Hubungi WA</b></button>
+    <div class="si static"><span data-ico="palette"></span><b>Tema</b></div>
+    <div class="themes">
+      <button data-t="white" class="sw-t t-white" aria-label="Putih"></button>
+      <button data-t="yellow" class="sw-t t-yellow" aria-label="Kuning"></button>
+      <button data-t="black" class="sw-t t-black" aria-label="Hitam"></button>
+    </div>
+  </nav>
+</aside>
+
+<div id="sheet"><div class="sheet-card neo">
+  <div class="row between"><b>Pengaturan</b><button class="ibtn" id="sheetClose"><span data-ico="x"></span></button></div>
+  <label>API key YouTube<input id="sYt" class="fld" placeholder="kosong = pakai bawaan"></label>
+  <label>API key Gemini<input id="sGem" class="fld" placeholder="kosong = pakai bawaan"></label>
+  <label>Model Gemini<input id="sModel" class="fld" placeholder="gemini-flash-latest"></label>
+  <label>Nomor WA developer<input id="sWa" class="fld" inputmode="numeric" placeholder="628xxxxxxxxxx"></label>
+  <button id="sSave" class="btn">Simpan</button>
+</div></div>
+
+<main>
+  <!-- BERANDA -->
+  <section id="page-home" class="page active">
+    <div class="hero neo rv">
+      <img src="hero.png" alt="" onerror="this.remove()">
+      <div class="hero-txt">
+        <div class="h-title">Welcome..</div>
+        <p>Kalau ada error atau ada yang tidak berfungsi, hubungi developer lewat menu <b>Profil</b>.</p>
+      </div>
+    </div>
+    <div class="neo card rv">
+      <div class="h2">Halo, saya Dikz</div>
+      <p>Aplikasi ini saya buat untuk dipakai sehari-hari: tanya AI, dengar musik sambil beraktivitas, dan atur suara sesuai selera.</p>
+    </div>
+    <div class="h2 rv">Fitur</div>
+    <div class="grid2">
+      <button class="neo fcard rv" data-go="ai"><span data-ico="ai"></span><b>AI</b><small>Tanya apa saja</small></button>
+      <button class="neo fcard rv" data-go="yt"><span data-ico="yt"></span><b>YouTube</b><small>Video &amp; musik</small></button>
+      <button class="neo fcard rv" data-go="eq"><span data-ico="eq"></span><b>Equalizer</b><small>Atur suara</small></button>
+      <button class="neo fcard rv" data-go="me"><span data-ico="user"></span><b>Profil</b><small>Foto &amp; bio</small></button>
+    </div>
+  </section>
+
+  <!-- AI -->
+  <section id="page-ai" class="page">
+    <div class="row between rv"><div class="h2">AI</div><button class="ibtn neo sm" id="chatClear" aria-label="Hapus chat"><span data-ico="trash"></span></button></div>
+    <div id="chat"></div>
+    <form id="chatForm" class="chatbar neo">
+      <textarea id="chatIn" rows="1" placeholder="Tanya sesuatu..."></textarea>
+      <button class="ibtn go" type="submit" aria-label="Kirim"><span data-ico="send"></span></button>
+    </form>
+  </section>
+
+  <!-- YOUTUBE -->
+  <section id="page-yt" class="page">
+    <div id="ySpacer"></div>
+    <form id="ytForm" class="searchbar neo">
+      <span data-ico="search"></span>
+      <input id="ytQ" placeholder="Cari video atau musik" enterkeyhint="search">
+    </form>
+    <div class="seg" id="ytSeg">
+      <button data-m="home" class="on">Beranda</button>
+      <button data-m="short">Short</button>
+      <button data-m="hist">Histori</button>
+    </div>
+    <div id="ytGrid"></div>
+  </section>
+
+  <!-- EQUALIZER -->
+  <section id="page-eq" class="page">
+    <div class="h2 rv">Equalizer</div>
+    <div id="eqBox"></div>
+  </section>
+
+  <!-- PROFIL -->
+  <section id="page-me" class="page">
+    <div class="neo card center rv">
+      <label class="avatar" for="photoIn"><img id="avImg" alt=""><span id="avIco" data-ico="camera"></span></label>
+      <input type="file" id="photoIn" accept="image/*" hidden>
+      <small>Ketuk foto untuk mengganti</small>
+    </div>
+    <div class="neo card rv">
+      <label>Nama<input id="pName" class="fld" maxlength="40" placeholder="Nama kamu"></label>
+      <label>Bio<textarea id="pBio" class="fld" rows="3" maxlength="160" placeholder="Ceritakan sedikit tentang kamu"></textarea></label>
+      <button id="pSave" class="btn">Simpan profil</button>
+    </div>
+    <button id="pWa" class="btn wide rv"><span data-ico="chat"></span>Hubungi developer</button>
+  </section>
+</main>
+
+<!-- PLAYER (satu iframe, pindah mode big / mini tanpa reload) -->
+<div id="pw">
+  <div id="fbox">
+    <div id="yt"></div>
+    <div id="shield"><button id="pcenter" class="cplay" aria-label="Putar"><span data-ico="play"></span></button></div>
+    <div id="mbtns">
+      <button id="mPlay" aria-label="Putar/jeda"><span data-ico="pause"></span></button>
+      <button id="mOpen" aria-label="Buka"><span data-ico="yt"></span></button>
+      <button id="mClose" aria-label="Tutup"><span data-ico="x"></span></button>
+    </div>
+  </div>
+  <div id="pctl">
+    <div id="ptitle"></div>
+    <div class="seekrow"><span id="tcur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="tdur">0:00</span></div>
+  </div>
+</div>
+
+<nav id="nav" class="neo">
+  <div id="indw"><i id="ind"></i></div>
+  <button class="on" data-go="home" aria-label="Beranda"><span data-ico="home"></span></button>
+  <button data-go="ai" aria-label="AI"><span data-ico="ai"></span></button>
+  <button data-go="yt" aria-label="YouTube"><span data-ico="yt"></span></button>
+  <button data-go="eq" aria-label="Equalizer"><span data-ico="eq"></span></button>
+  <button data-go="me" aria-label="Profil"><span data-ico="user"></span></button>
+</nav>
+<div id="toast"></div>
+
+<script src="core.js"></script>
+<script src="eq.js"></script>
+<script src="ai.js"></script>
+<script src="yt.js"></script>
+<script src="me.js"></script>
+<script>boot();</script>
+</body>
+</html>
