@@ -1,3 +1,5 @@
+import java.util.Properties
+import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,7 +11,7 @@ fun secret(name: String): String {
     if (!env.isNullOrBlank()) return env
     val f = rootProject.file("keys.properties")
     if (f.exists()) {
-        val p = java.util.Properties()
+        val p = Properties()
         f.inputStream().use { p.load(it) }
         return p.getProperty(name, "")
     }
