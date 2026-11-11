@@ -3,3 +3,4 @@ build/
 local.properties
 keys.properties
 *.apk
+log.txt
