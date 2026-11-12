@@ -5,6 +5,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.net.Uri
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -16,6 +19,14 @@ import androidx.webkit.WebViewAssetLoader
 
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
+
+    private var fileCb: ValueCallback<Array<Uri>>? = null
+
+    private val picker =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            fileCb?.onReceiveValue(if (uri != null) arrayOf(uri) else null)
+            fileCb = null
+        }
 
     private val notifPerm =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { startAudio() }
@@ -40,6 +51,25 @@ class MainActivity : AppCompatActivity() {
             allowContentAccess = false
         }
         web.addJavascriptInterface(Bridge(this), "Native")
+        // Tanpa ini, <input type="file"> di WebView tidak melakukan apa-apa (foto profil tidak bisa dipilih).
+        web.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                view: WebView,
+                callback: ValueCallback<Array<Uri>>,
+                params: WebChromeClient.FileChooserParams
+            ): Boolean {
+                fileCb?.onReceiveValue(null)
+                fileCb = callback
+                return try {
+                    picker.launch("image/*")
+                    true
+                } catch (_: Exception) {
+                    fileCb = null
+                    callback.onReceiveValue(null)
+                    false
+                }
+            }
+        }
         web.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
                 loader.shouldInterceptRequest(request.url)

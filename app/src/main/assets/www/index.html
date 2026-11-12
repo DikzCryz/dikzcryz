@@ -6,7 +6,7 @@
 <title>DikzCryz</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body data-theme="white">
+<body data-theme="green">
 
 <div id="splash">
   <video id="introVid" src="intro.mp4" muted autoplay playsinline></video>
@@ -36,6 +36,7 @@
     <button class="si" id="siWa"><span data-ico="chat"></span><b>Hubungi WA</b></button>
     <div class="si static"><span data-ico="palette"></span><b>Tema</b></div>
     <div class="themes">
+      <button data-t="green" class="sw-t t-green" aria-label="Hijau"></button>
       <button data-t="white" class="sw-t t-white" aria-label="Putih"></button>
       <button data-t="yellow" class="sw-t t-yellow" aria-label="Kuning"></button>
       <button data-t="black" class="sw-t t-black" aria-label="Hitam"></button>
@@ -55,18 +56,16 @@
 <main>
   <!-- BERANDA -->
   <section id="page-home" class="page active">
-    <div class="hero neo rv">
-      <img src="hero.png" alt="" onerror="this.remove()">
-      <div class="hero-txt">
-        <div class="h-title">Welcome..</div>
-        <p>Kalau ada error atau ada yang tidak berfungsi, hubungi developer lewat menu <b>Profil</b>.</p>
-      </div>
+    <div class="home-spacer"></div>
+    <div class="neo card rv">
+      <div class="h-title">Welcome..</div>
+      <p>Kalau ada error atau ada yang tidak berfungsi, hubungi developer lewat menu <b>Profil</b>.</p>
     </div>
     <div class="neo card rv">
       <div class="h2">Halo, saya Dikz</div>
       <p>Aplikasi ini saya buat untuk dipakai sehari-hari: tanya AI, dengar musik sambil beraktivitas, dan atur suara sesuai selera.</p>
     </div>
-    <div class="h2 rv">Fitur</div>
+    <div class="h2 pill neo rv">Fitur</div>
     <div class="grid2">
       <button class="neo fcard rv" data-go="ai"><span data-ico="ai"></span><b>AI</b><small>Tanya apa saja</small></button>
       <button class="neo fcard rv" data-go="yt"><span data-ico="yt"></span><b>YouTube</b><small>Video &amp; musik</small></button>
@@ -109,9 +108,9 @@
   <!-- PROFIL -->
   <section id="page-me" class="page">
     <div class="neo card center rv">
-      <label class="avatar" for="photoIn"><img id="avImg" alt=""><span id="avIco" data-ico="camera"></span></label>
+      <div class="avatar" id="avatar"><img id="avImg" alt=""><span id="avIco" data-ico="camera"></span></div>
       <input type="file" id="photoIn" accept="image/*" hidden>
-      <small>Ketuk foto untuk mengganti</small>
+      <button type="button" id="photoBtn" class="btn sm">Edit</button>
     </div>
     <div class="neo card rv">
       <label>Nama<input id="pName" class="fld" maxlength="40" placeholder="Nama kamu"></label>

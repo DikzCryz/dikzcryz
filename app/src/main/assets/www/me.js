@@ -6,6 +6,9 @@
     if (p.photo) { img.src = p.photo; img.style.display = 'block'; $('#avIco').style.display = 'none'; }
     else { img.style.display = 'none'; $('#avIco').style.display = 'block'; }
   };
+  const pick = () => $('#photoIn').click();
+  $('#photoBtn').addEventListener('click', pick);
+  $('#avatar').addEventListener('click', pick);
   $('#photoIn').addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const im = new Image(), url = URL.createObjectURL(f);
@@ -16,7 +19,8 @@
       p.photo = c.toDataURL('image/jpeg', .85); URL.revokeObjectURL(url);
       ls.set('dz_profile', p); show(); toast('Foto diperbarui');
     };
-    im.src = url;
+    im.onerror = () => toast('Foto tidak bisa dibaca');
+    im.src = url; e.target.value = '';
   });
   $('#pSave').onclick = () => {
     p.name = $('#pName').value.trim(); p.bio = $('#pBio').value.trim();

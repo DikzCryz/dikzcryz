@@ -109,7 +109,7 @@ function boot() {
   } catch (e) {}
 
   paint();
-  setTheme(ls.get('dz_theme', 'white'));
+  setTheme(ls.get('dz_theme', 'green'));
   $$('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
   $('#menuBtn').onclick = () => sideOpen(true);
   $('#sideClose').onclick = () => sideOpen(false);
@@ -138,14 +138,24 @@ function boot() {
   go('home');
   reveal();
 
-  // layar loading 8 detik (video intro.mp4 kalau ada)
+  // layar loading: video intro.mp4 (selesai saat video habis); kalau tidak ada video, 8 detik
   const sp = $('#splash'), v = $('#introVid');
-  typeText($('#splashTitle'), 'DikzCryz', 150);
-  v.onerror = () => v.remove();
-  const bar = $('#sbar'); bar.style.transition = 'width 8s linear';
-  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
-  setTimeout(() => {
+  let closed = false;
+  const closeSplash = () => {
+    if (closed) return; closed = true;
     sp.classList.add('out'); setTimeout(() => sp.remove(), 700);
     typeText($('#brand'), 'DikzCryz', 110);
-  }, 8000);
+  };
+  const fallback = () => {
+    v.remove(); sp.classList.remove('has-video');
+    typeText($('#splashTitle'), 'DikzCryz', 150);
+    const bar = $('#sbar'); bar.style.transition = 'width 8s linear';
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+    setTimeout(closeSplash, 8000);
+  };
+  sp.classList.add('has-video');
+  v.onerror = fallback;
+  v.onended = closeSplash;
+  v.play && v.play().catch(() => {});
+  setTimeout(closeSplash, 14000);
 }
