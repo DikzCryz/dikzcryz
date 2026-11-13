@@ -50,5 +50,15 @@ class Bridge(private val a: Activity) {
         }
     }
 
+    @JavascriptInterface
+    fun share(text: String) {
+        a.runOnUiThread {
+            try {
+                val i = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                a.startActivity(Intent.createChooser(i, "Bagikan"))
+            } catch (_: Exception) { }
+        }
+    }
+
     @JavascriptInterface fun exitApp() { a.runOnUiThread { a.finish() } }
 }

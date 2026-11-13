@@ -46,6 +46,14 @@
 
 <div id="sheet"><div class="sheet-card neo">
   <div class="row between"><b>Pengaturan</b><button class="ibtn" id="sheetClose"><span data-ico="x"></span></button></div>
+  <div class="bgrow">
+    <div class="bgprev" id="bgPrev"></div>
+    <div class="col"><b>Background</b>
+      <button type="button" class="btn sm" id="bgPick">Ganti dari galeri</button>
+      <button type="button" class="btn sm" id="bgReset">Pakai bawaan</button>
+    </div>
+  </div>
+  <input type="file" id="bgIn" accept="image/*" hidden>
   <label>API key YouTube<input id="sYt" class="fld" placeholder="kosong = pakai bawaan"></label>
   <label>API key Gemini<input id="sGem" class="fld" placeholder="kosong = pakai bawaan"></label>
   <label>Model Gemini<input id="sModel" class="fld" placeholder="gemini-flash-latest"></label>
@@ -87,16 +95,38 @@
   <!-- YOUTUBE -->
   <section id="page-yt" class="page">
     <div id="ySpacer"></div>
-    <form id="ytForm" class="searchbar neo">
-      <span data-ico="search"></span>
-      <input id="ytQ" placeholder="Cari video atau musik" enterkeyhint="search">
-    </form>
-    <div class="seg" id="ytSeg">
-      <button data-m="home" class="on">Beranda</button>
-      <button data-m="short">Short</button>
-      <button data-m="hist">Histori</button>
+    <div id="yFeed">
+      <form id="ytForm" class="searchbar neo">
+        <span data-ico="search"></span>
+        <input id="ytQ" placeholder="Cari video atau musik" enterkeyhint="search">
+      </form>
+      <div id="ytTabs">
+        <button data-m="home" class="on">Utama</button>
+        <button data-m="music">Musik</button>
+        <button data-m="mix">Mix</button>
+        <button data-m="news">Berita</button>
+        <button data-m="game">Game</button>
+        <button data-m="short">Short</button>
+        <button data-m="hist">Histori</button>
+      </div>
+      <div id="ytGrid"></div>
     </div>
-    <div id="ytGrid"></div>
+    <div id="yWatch" class="hide">
+      <div class="wtitle"><b id="wTitle"></b><button id="wMore" aria-label="Deskripsi"><span data-ico="chevd"></span></button></div>
+      <div class="wstat" id="wStat"></div>
+      <div class="wdesc hide" id="wDesc"></div>
+      <div class="wacts">
+        <div class="wact static" id="wLike"><span data-ico="like"></span><span id="wLikeN">-</span></div>
+        <button class="wact" id="aShare"><span data-ico="share"></span>Bagikan</button>
+        <button class="wact" id="aPop"><span data-ico="popup"></span>Popup</button>
+        <button class="wact" id="aOpen"><span data-ico="ext"></span>YouTube</button>
+      </div>
+      <div class="wchan"><img class="av hide" id="wAv" alt=""><span class="av ph" id="wAvPh"></span><div><b id="wChan"></b><small id="wSubs"></small></div></div>
+      <button class="wrow" id="wComBtn"><span>Tampilkan Komentar</span><span data-ico="chevd"></span></button>
+      <div id="wComs" class="hide"></div>
+      <div class="wrow"><span>Berikutnya</span><span class="row"><small>Antrean otomatis</small><button class="swt sm on" id="wAuto" aria-label="Antrean otomatis"></button></span></div>
+      <div id="wNext"></div>
+    </div>
   </section>
 
   <!-- EQUALIZER -->
@@ -121,22 +151,23 @@
   </section>
 </main>
 
-<!-- PLAYER (satu iframe, pindah mode big / mini tanpa reload) -->
+<!-- PLAYER (satu iframe, mode big / mini tanpa reload) -->
 <div id="pw">
   <div id="fbox">
     <div id="yt"></div>
     <div id="shield"><button id="pcenter" class="cplay" aria-label="Putar"><span data-ico="play"></span></button></div>
-    <div id="mbtns">
-      <button id="mPlay" aria-label="Putar/jeda"><span data-ico="pause"></span></button>
-      <button id="mOpen" aria-label="Buka"><span data-ico="yt"></span></button>
-      <button id="mClose" aria-label="Tutup"><span data-ico="x"></span></button>
-    </div>
+  </div>
+  <div id="mtxt"><b id="mtitle"></b><small id="mchan"></small></div>
+  <div id="mbtns">
+    <button id="mPlay" aria-label="Putar/jeda"><span data-ico="pause"></span></button>
+    <button id="mClose" aria-label="Tutup"><span data-ico="x"></span></button>
   </div>
   <div id="pctl">
-    <div id="ptitle"></div>
     <div class="seekrow"><span id="tcur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="tdur">0:00</span></div>
   </div>
 </div>
+
+<div id="ymenu"><div class="sheet-card neo" id="ymenuCard"></div></div>
 
 <nav id="nav" class="neo">
   <div id="indw"><i id="ind"></i></div>

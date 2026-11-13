@@ -40,7 +40,14 @@ const IC = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
   palette: '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.6-2-.5-1.2.2-2.5 1.6-2.5H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5z"/><circle cx="7.5" cy="11" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
-  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  dots: '<path d="M12 5v.01M12 12v.01M12 19v.01" stroke-width="3.6"/>',
+  chevd: '<path d="M6 9l6 6 6-6"/>',
+  like: '<path d="M7 11v9H4v-9zM7 11l4-8c1.5 0 2.5 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/>',
+  share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6"/>',
+  queue: '<path d="M4 6h12M4 11h12M4 16h7M17 14v6M14 17h6"/>',
+  popup: '<rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'
 };
 const ico = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${IC[n] || ''}</svg>`;
 const paint = (root = document) => $$('[data-ico]', root).forEach(e => { e.innerHTML = ico(e.dataset.ico); });
@@ -95,11 +102,40 @@ function setTheme(t) {
 window.__back = () => {
   if ($('#sheet').classList.contains('open')) { sheetOpen(false); return true; }
   if (document.body.classList.contains('side-open')) { sideOpen(false); return true; }
+  if (window.__ytBack && window.__ytBack()) return true;
   if (cur !== 'home') { go('home'); return true; }
   return false;
 };
 
 /* ===== boot ===== */
+/* ===== background (wallpaper) yang bisa diganti user ===== */
+function applyBg() {
+  const d = ls.get('dz_bg', '');
+  const root = document.documentElement.style;
+  if (d) root.setProperty('--wall', 'url("' + d + '")'); else root.removeProperty('--wall');
+  const pv = $('#bgPrev'); if (pv) pv.style.backgroundImage = d ? 'url("' + d + '")' : 'url("hero.jpg")';
+}
+function setupBg() {
+  $('#bgPick').onclick = () => $('#bgIn').click();
+  $('#bgReset').onclick = () => { try { localStorage.removeItem('dz_bg'); } catch (e) {} applyBg(); toast('Background kembali ke bawaan'); };
+  $('#bgIn').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const im = new Image(), url = URL.createObjectURL(f);
+    im.onload = () => {
+      const k = Math.min(1, 1080 / im.width, 2400 / im.height);
+      const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      const data = c.toDataURL('image/jpeg', .82);
+      try { localStorage.setItem('dz_bg', JSON.stringify(data)); applyBg(); toast('Background diganti'); }
+      catch (err) { toast('Gambar terlalu besar, pilih yang lain'); }
+    };
+    im.onerror = () => toast('Gambar tidak bisa dibaca');
+    im.src = url; e.target.value = '';
+  });
+  applyBg();
+}
+
 function boot() {
   // biar YouTube / pemutar tidak menganggap halaman "tersembunyi" saat app di background
   try {
@@ -109,6 +145,7 @@ function boot() {
   } catch (e) {}
 
   paint();
+  setupBg();
   setTheme(ls.get('dz_theme', 'green'));
   $$('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
   $('#menuBtn').onclick = () => sideOpen(true);
