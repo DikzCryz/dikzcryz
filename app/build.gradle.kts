@@ -1,10 +1,11 @@
 import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
-// Key dibaca dari environment (GitHub Secrets) atau keys.properties, TIDAK ditulis di kode.
+// Nilai rahasia dibaca dari environment (GitHub Secrets) atau keys.properties, TIDAK ditulis di kode.
 fun secret(name: String): String {
     val env = System.getenv(name)
     if (!env.isNullOrBlank()) return env
@@ -17,6 +18,8 @@ fun secret(name: String): String {
     return ""
 }
 
+val hasKeystore = !System.getenv("KEYSTORE_FILE").isNullOrBlank()
+
 android {
     namespace = "com.dikzcryz.app"
     compileSdk = 34
@@ -25,17 +28,30 @@ android {
         applicationId = "com.dikzcryz.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "4.0"
         buildConfigField("String", "YT_API_KEY", "\"${secret("YT_API_KEY")}\"")
-        buildConfigField("String", "GEMINI_API_KEY", "\"${secret("GEMINI_API_KEY")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY")}\"")
     }
+
+    signingConfigs {
+        create("rel") {
+            if (hasKeystore) {
+                storeFile = file(System.getenv("KEYSTORE_FILE"))
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildFeatures { buildConfig = true }
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Ditandatangani dengan debug key supaya langsung bisa di-install.
-            signingConfig = signingConfigs.getByName("debug")
+            // Kunci tetap (keystore sendiri) kalau tersedia; kalau tidak, pakai debug key.
+            signingConfig = if (hasKeystore) signingConfigs.getByName("rel") else signingConfigs.getByName("debug")
         }
     }
     compileOptions {

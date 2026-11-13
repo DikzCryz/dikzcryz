@@ -54,10 +54,11 @@ class MainActivity : AppCompatActivity() {
         // Tanpa ini, <input type="file"> di WebView tidak melakukan apa-apa (foto profil tidak bisa dipilih).
         web.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
-                view: WebView,
-                callback: ValueCallback<Array<Uri>>,
-                params: WebChromeClient.FileChooserParams
+                view: WebView?,
+                callback: ValueCallback<Array<Uri>>?,
+                params: WebChromeClient.FileChooserParams?
             ): Boolean {
+                if (callback == null) return false
                 fileCb?.onReceiveValue(null)
                 fileCb = callback
                 return try {

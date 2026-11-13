@@ -9,8 +9,21 @@
 <body data-theme="green">
 
 <div id="splash">
-  <video id="introVid" src="intro.mp4" muted autoplay playsinline></video>
-  <div class="splash-in"><div class="brand big" id="splashTitle"></div><div class="sbar"><i id="sbar"></i></div></div>
+  <div class="splash-in"><img class="splash-logo" src="logo.jpg" alt=""><div class="brand big" id="splashTitle"></div><div class="sbar"><i id="sbar"></i></div></div>
+</div>
+
+<!-- GERBANG TOKEN: video diputar berulang terus sampai user berhasil masuk -->
+<div id="gate">
+  <video id="gateVid" src="intro.mp4" muted loop autoplay playsinline></video>
+  <div class="gate-shade"></div>
+  <form id="gateForm" class="gate-card neo" autocomplete="off">
+    <div class="brand big">DikzCryz</div>
+    <p id="gateMsg" class="gate-msg">Masukkan nama dan token dari developer untuk masuk.</p>
+    <label>Nama<input id="gName" class="fld" maxlength="30" autocomplete="off" placeholder="Nama kamu"></label>
+    <label>Token<input id="gToken" class="fld" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="DZ-XXXX-XXXX-XXXX"></label>
+    <button class="btn wide" id="gBtn" type="submit">Masuk</button>
+    <button type="button" class="btn sm" id="gWa">Beli token / hubungi developer</button>
+  </form>
 </div>
 
 <header id="top" class="neo">
@@ -28,9 +41,7 @@
   <nav class="side-list">
     <button class="si" id="siAbout"><span data-ico="info"></span><b>Tentang aplikasi</b></button>
     <div class="about" id="aboutBox">
-      DikzCryz menyatukan asisten AI, pemutar YouTube, dan equalizer dalam satu aplikasi.
-      AI untuk bertanya apa saja, YouTube untuk musik dan video (tetap jalan saat pindah halaman),
-      equalizer untuk mengatur suara dari semua aplikasi.
+      DikzCryz menyatukan chat komunitas, pemutar YouTube, dan equalizer dalam satu aplikasi. Chat untuk ngobrol dengan sesama pengguna atau menghubungi admin secara pribadi, YouTube untuk musik dan video (tetap jalan saat pindah halaman), equalizer untuk mengatur suara dari semua aplikasi.
     </div>
     <button class="si" id="siSet"><span data-ico="gear"></span><b>Pengaturan</b></button>
     <button class="si" id="siWa"><span data-ico="chat"></span><b>Hubungi WA</b></button>
@@ -55,8 +66,6 @@
   </div>
   <input type="file" id="bgIn" accept="image/*" hidden>
   <label>API key YouTube<input id="sYt" class="fld" placeholder="kosong = pakai bawaan"></label>
-  <label>API key Gemini<input id="sGem" class="fld" placeholder="kosong = pakai bawaan"></label>
-  <label>Model Gemini<input id="sModel" class="fld" placeholder="gemini-flash-latest"></label>
   <label>Nomor WA developer<input id="sWa" class="fld" inputmode="numeric" placeholder="628xxxxxxxxxx"></label>
   <button id="sSave" class="btn">Simpan</button>
 </div></div>
@@ -71,23 +80,24 @@
     </div>
     <div class="neo card rv">
       <div class="h2">Halo, saya Dikz</div>
-      <p>Aplikasi ini saya buat untuk dipakai sehari-hari: tanya AI, dengar musik sambil beraktivitas, dan atur suara sesuai selera.</p>
+      <p>Aplikasi ini saya buat untuk dipakai sehari-hari: ngobrol di komunitas, dengar musik sambil beraktivitas, dan atur suara sesuai selera.</p>
     </div>
     <div class="h2 pill neo rv">Fitur</div>
     <div class="grid2">
-      <button class="neo fcard rv" data-go="ai"><span data-ico="ai"></span><b>AI</b><small>Tanya apa saja</small></button>
+      <button class="neo fcard rv" data-go="chat"><span data-ico="chat"></span><b>Chat</b><small>Komunitas &amp; admin</small></button>
       <button class="neo fcard rv" data-go="yt"><span data-ico="yt"></span><b>YouTube</b><small>Video &amp; musik</small></button>
       <button class="neo fcard rv" data-go="eq"><span data-ico="eq"></span><b>Equalizer</b><small>Atur suara</small></button>
       <button class="neo fcard rv" data-go="me"><span data-ico="user"></span><b>Profil</b><small>Foto &amp; bio</small></button>
     </div>
   </section>
 
-  <!-- AI -->
-  <section id="page-ai" class="page">
-    <div class="row between rv"><div class="h2">AI</div><button class="ibtn neo sm" id="chatClear" aria-label="Hapus chat"><span data-ico="trash"></span></button></div>
+  <!-- CHAT -->
+  <section id="page-chat" class="page">
+    <div class="h2 rv">Chat</div>
+    <div class="seg" id="chatTabs"><button data-r="group" class="on">Komunitas</button><button data-r="dm">Admin</button></div>
     <div id="chat"></div>
     <form id="chatForm" class="chatbar neo">
-      <textarea id="chatIn" rows="1" placeholder="Tanya sesuatu..."></textarea>
+      <textarea id="chatIn" rows="1" maxlength="1000" placeholder="Tulis pesan..."></textarea>
       <button class="ibtn go" type="submit" aria-label="Kirim"><span data-ico="send"></span></button>
     </form>
   </section>
@@ -172,7 +182,7 @@
 <nav id="nav" class="neo">
   <div id="indw"><i id="ind"></i></div>
   <button class="on" data-go="home" aria-label="Beranda"><span data-ico="home"></span></button>
-  <button data-go="ai" aria-label="AI"><span data-ico="ai"></span></button>
+  <button data-go="chat" aria-label="Chat"><span data-ico="chat"></span></button>
   <button data-go="yt" aria-label="YouTube"><span data-ico="yt"></span></button>
   <button data-go="eq" aria-label="Equalizer"><span data-ico="eq"></span></button>
   <button data-go="me" aria-label="Profil"><span data-ico="user"></span></button>
@@ -180,8 +190,9 @@
 <div id="toast"></div>
 
 <script src="core.js"></script>
+<script src="gate.js"></script>
 <script src="eq.js"></script>
-<script src="ai.js"></script>
+<script src="chat.js"></script>
 <script src="yt.js"></script>
 <script src="me.js"></script>
 <script>boot();</script>

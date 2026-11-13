@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.provider.Settings
 import android.webkit.JavascriptInterface
 import org.json.JSONObject
 
@@ -12,8 +13,17 @@ class Bridge(private val a: Activity) {
     @JavascriptInterface
     fun config(): String = JSONObject()
         .put("yt", BuildConfig.YT_API_KEY)
-        .put("gemini", BuildConfig.GEMINI_API_KEY)
+        .put("sbUrl", BuildConfig.SUPABASE_URL)
+        .put("sbKey", BuildConfig.SUPABASE_ANON_KEY)
         .toString()
+
+    /** ID perangkat yang stabil (di-hash), dipakai untuk membatasi jumlah perangkat per token. */
+    @JavascriptInterface
+    fun deviceId(): String {
+        val raw = Settings.Secure.getString(a.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
+        val md = java.security.MessageDigest.getInstance("SHA-256").digest(("dikzcryz:" + raw).toByteArray())
+        return md.joinToString("") { "%02x".format(it) }.take(32)
+    }
 
     @JavascriptInterface fun eqState(): String = EqEngine.state().toString()
 

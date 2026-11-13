@@ -88,7 +88,7 @@ body.side-open .side-list>*:nth-child(5){transition-delay:.44s}body.side-open .s
 .dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
 @keyframes dot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
 .chatbar{position:fixed;z-index:15;left:14px;right:14px;bottom:calc(var(--navh) + 26px);display:none;align-items:flex-end;gap:8px;padding:8px;border-radius:22px}
-body[data-page=ai] .chatbar{display:flex}
+body[data-page=chat] .chatbar{display:flex}
 .chatbar textarea{flex:1;resize:none;border:0;background:none;outline:0;padding:9px 6px;max-height:110px}
 .go{background:var(--acc);color:var(--onacc);}
 
@@ -237,4 +237,21 @@ body[data-page=yt]::after{content:"";position:fixed;inset:0;z-index:-1;backgroun
 .bgrow{display:flex;gap:12px;align-items:center;margin:12px 0 14px}
 .bgprev{width:64px;height:96px;border-radius:12px;background:#000 center/cover no-repeat;box-shadow:inset 3px 3px 6px var(--lo),inset -3px -3px 6px var(--hi);flex:0 0 64px}
 .bgrow .col{display:flex;flex-direction:column;gap:10px}
-body[data-page=ai] #pw.mini{bottom:calc(var(--navh) + 96px)}
+body[data-page=chat] #pw.mini{bottom:calc(var(--navh) + 96px)}
+
+/* tab chat */
+.seg{display:flex;gap:10px;margin-bottom:14px}
+.seg button{flex:1;padding:11px 0;border-radius:14px;font-weight:700;font-size:14.5px;box-shadow:4px 4px 8px var(--lo),-4px -4px 8px var(--hi)}
+.seg button.on{background:var(--acc);color:var(--onacc);box-shadow:inset 3px 3px 6px rgba(0,0,0,.2)}
+.who{display:block;font-size:12px;opacity:.8;margin-bottom:3px}
+/* gerbang token */
+#gate{position:fixed;inset:0;z-index:90;background:#000;display:grid;place-items:center;padding:20px;transition:opacity .5s}
+#gate.out{opacity:0;pointer-events:none}
+#gate video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gate-shade{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.65))}
+.gate-card{position:relative;width:100%;max-width:380px;padding:22px 18px;text-align:center;background:var(--bg);background:color-mix(in srgb,var(--bg) 80%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.gate-card label{text-align:left}
+.gate-msg{font-size:14px;line-height:1.5;margin:8px 0 14px}
+.gate-msg.err{color:#ff7b7b}
+.gate-card .btn.sm{margin-top:10px}
+.splash-logo{display:block;width:120px;height:120px;margin:0 auto 14px;border-radius:50%;object-fit:cover}

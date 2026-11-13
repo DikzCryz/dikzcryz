@@ -15,11 +15,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
+      - name: Keystore (kunci tetap)
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$GITHUB_WORKSPACE/release.jks"
+            echo "KEYSTORE_FILE=$GITHUB_WORKSPACE/release.jks" >> "$GITHUB_ENV"
+          fi
       - name: Build
         run: gradle assembleRelease --no-daemon
         env:
           YT_API_KEY: ${{ secrets.YT_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: DikzCryz-apk

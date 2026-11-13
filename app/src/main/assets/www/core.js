@@ -10,16 +10,16 @@ const ls = {
 };
 
 /* Nomor WA developer (format 628xxxxxxxxxx). Bisa juga diisi lewat Sidebar > Pengaturan. */
-const DEV_WA = '';
+const DEV_WA = '6281717445134';
 
-let baseCfg = { yt: '', gemini: '' };
+let baseCfg = { yt: '', sbUrl: '', sbKey: '' };
 try { if (N) baseCfg = JSON.parse(N.config()); } catch (e) {}
 let over = ls.get('dz_cfg', {});
 const C = () => ({
   yt: over.yt || baseCfg.yt,
-  gemini: over.gemini || baseCfg.gemini,
-  model: over.model || 'gemini-flash-latest',
-  wa: over.wa || DEV_WA
+  wa: over.wa || DEV_WA,
+  sbUrl: baseCfg.sbUrl || '',
+  sbKey: baseCfg.sbKey || ''
 });
 
 /* ===== icon SVG (tanpa emoji) ===== */
@@ -76,7 +76,7 @@ function reveal() {
 }
 
 /* ===== navigasi ===== */
-const PAGES = ['home', 'ai', 'yt', 'eq', 'me'];
+const PAGES = ['home', 'chat', 'yt', 'eq', 'me'];
 let cur = 'home';
 function go(p) {
   cur = p;
@@ -155,13 +155,12 @@ function boot() {
   $$('.sw-t').forEach(b => b.onclick = () => setTheme(b.dataset.t));
 
   $('#siSet').onclick = () => {
-    $('#sYt').value = over.yt || ''; $('#sGem').value = over.gemini || '';
-    $('#sModel').value = over.model || ''; $('#sWa').value = over.wa || '';
+    $('#sYt').value = over.yt || ''; $('#sWa').value = over.wa || '';
     sideOpen(false); sheetOpen(true);
   };
   $('#sheetClose').onclick = () => sheetOpen(false);
   $('#sSave').onclick = () => {
-    over = { yt: $('#sYt').value.trim(), gemini: $('#sGem').value.trim(), model: $('#sModel').value.trim(), wa: $('#sWa').value.replace(/\D/g, '') };
+    over = { yt: $('#sYt').value.trim(), wa: $('#sWa').value.replace(/\D/g, '') };
     ls.set('dz_cfg', over); sheetOpen(false); toast('Pengaturan disimpan');
   };
   const wa = () => {
@@ -175,24 +174,14 @@ function boot() {
   go('home');
   reveal();
 
-  // layar loading: video intro.mp4 (selesai saat video habis); kalau tidak ada video, 8 detik
-  const sp = $('#splash'), v = $('#introVid');
-  let closed = false;
-  const closeSplash = () => {
-    if (closed) return; closed = true;
+  // layar loading singkat (logo + bar); setelah itu gerbang token (video berulang) kalau belum masuk
+  const sp = $('#splash');
+  typeText($('#splashTitle'), 'DikzCryz', 140);
+  const bar = $('#sbar'); bar.style.transition = 'width 2.6s linear';
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+  setTimeout(() => {
     sp.classList.add('out'); setTimeout(() => sp.remove(), 700);
     typeText($('#brand'), 'DikzCryz', 110);
-  };
-  const fallback = () => {
-    v.remove(); sp.classList.remove('has-video');
-    typeText($('#splashTitle'), 'DikzCryz', 150);
-    const bar = $('#sbar'); bar.style.transition = 'width 8s linear';
-    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
-    setTimeout(closeSplash, 8000);
-  };
-  sp.classList.add('has-video');
-  v.onerror = fallback;
-  v.onended = closeSplash;
-  v.play && v.play().catch(() => {});
-  setTimeout(closeSplash, 14000);
+  }, 2800);
+  gate.start();
 }

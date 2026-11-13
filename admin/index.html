@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DikzCryz Admin</title>
+<style>
+:root{--bg:#0f1f15;--card:#16301f;--fg:#e8ffee;--acc:#39e75f;--onacc:#04170a;--mut:#8fb59a;--red:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 ui-monospace,Menlo,Consolas,monospace;font-weight:600}
+h1{font-size:18px;margin:0}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;position:sticky;top:0;background:var(--bg);z-index:5}
+main{padding:0 14px 40px;max-width:900px;margin:0 auto}
+.card{background:var(--card);border-radius:16px;padding:14px;margin:0 0 14px}
+input,select,textarea{width:100%;padding:11px 12px;margin:6px 0 12px;border:0;border-radius:12px;background:#0c1810;color:var(--fg);font:inherit;outline:0}
+label{font-size:12px;color:var(--mut)}
+button{font:inherit;font-weight:800;cursor:pointer;border:0;border-radius:12px;padding:10px 14px;background:var(--acc);color:var(--onacc)}
+button.g{background:#254a31;color:var(--fg)}button.r{background:#5a2323;color:#ffd0d0}
+button.sm{padding:6px 10px;font-size:12px;border-radius:9px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}
+.tabs button{flex:0 0 auto;background:#254a31;color:var(--fg)}.tabs button.on{background:var(--acc);color:var(--onacc)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:8px 6px;text-align:left;border-bottom:1px solid #254a31;vertical-align:top}
+th{color:var(--mut);font-size:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tok{font-size:17px;letter-spacing:1px;color:var(--acc);word-break:break-all}
+.msg{padding:8px 10px;border-radius:12px;margin:6px 0;background:#0c1810;word-break:break-word;white-space:pre-wrap}
+.msg.adm{background:#1d4a2b}
+.msg small{display:block;color:var(--mut);font-size:11px}
+.err{color:var(--red);min-height:20px}
+.hide{display:none!important}
+.badge{padding:2px 8px;border-radius:8px;font-size:11px;background:#254a31}.badge.off{background:#5a2323}
+</style>
+</head>
+<body>
+<header><h1>DikzCryz Admin</h1><button class="g sm hide" id="out">Keluar</button></header>
+<main>
+  <!-- LOGIN -->
+  <section id="login" class="card">
+    <label>URL Supabase</label><input id="lUrl" placeholder="https://xxxx.supabase.co" autocomplete="off">
+    <label>Anon / publishable key</label><input id="lKey" autocomplete="off">
+    <label>Email admin</label><input id="lMail" type="email" autocomplete="username">
+    <label>Password</label><input id="lPass" type="password" autocomplete="current-password">
+    <div class="err" id="lErr"></div>
+    <button id="lGo">Masuk</button>
+  </section>
+
+  <!-- APP -->
+  <section id="app" class="hide">
+    <div class="tabs" id="tabs">
+      <button data-t="tok" class="on">Token</button>
+      <button data-t="dev">Perangkat</button>
+      <button data-t="grp">Chat grup</button>
+      <button data-t="dm">Pesan pribadi</button>
+    </div>
+
+    <div id="t-tok">
+      <div class="card">
+        <b>Buat token baru</b>
+        <label>Nama pembeli</label><input id="nBuyer" placeholder="mis. Budi (WA 0812...)">
+        <label>Maks. perangkat</label><input id="nMax" type="number" min="1" max="50" value="2">
+        <button id="nGo">Buat token</button>
+        <div id="nOut" class="card hide" style="margin-top:12px">
+          <small>Kirim token ini ke pembeli:</small>
+          <div class="tok" id="nTok"></div>
+          <button class="g sm" id="nCopy" style="margin-top:8px">Salin</button>
+        </div>
+        <div class="err" id="nErr"></div>
+      </div>
+      <div class="card" style="overflow:auto"><table id="licTbl"></table></div>
+    </div>
+
+    <div id="t-dev" class="hide"><div class="card" style="overflow:auto"><table id="devTbl"></table></div></div>
+
+    <div id="t-grp" class="hide">
+      <div class="card"><div id="grpBox"></div>
+        <textarea id="grpIn" rows="2" maxlength="1000" placeholder="Tulis pengumuman / balasan sebagai Admin"></textarea>
+        <button id="grpSend">Kirim ke grup</button></div>
+    </div>
+
+    <div id="t-dm" class="hide">
+      <div class="card" id="dmList"></div>
+      <div class="card hide" id="dmThread">
+        <div class="row"><button class="g sm" id="dmBack">Kembali</button><b id="dmWho"></b></div>
+        <div id="dmBox"></div>
+        <textarea id="dmIn" rows="2" maxlength="1000" placeholder="Balas sebagai Admin"></textarea>
+        <button id="dmSend">Kirim</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ago = iso => { const s=(Date.now()-new Date(iso))/1000; if(s<60)return 'baru saja'; if(s<3600)return Math.floor(s/60)+' mnt lalu'; if(s<86400)return Math.floor(s/3600)+' jam lalu'; return Math.floor(s/86400)+' hari lalu'; };
+let S = JSON.parse(localStorage.getItem('adm') || '{}'), jwt = null, rt = null, tab = 'tok', dmRoom = null, timer = null;
+
+/* ---- jaringan ---- */
+async function auth(body, grant) {
+  const r = await fetch(S.url + '/auth/v1/token?grant_type=' + grant, { method:'POST', headers:{ apikey:S.key, 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error_description || j.msg || j.message || 'Gagal masuk');
+  jwt = j.access_token; rt = j.refresh_token;
+}
+async function api(path, opt = {}, retry = true) {
+  const r = await fetch(S.url + '/rest/v1/' + path, { ...opt, headers: { apikey:S.key, Authorization:'Bearer ' + jwt, 'Content-Type':'application/json', Prefer:'return=representation', ...(opt.headers || {}) } });
+  if ((r.status === 401 || r.status === 403) && retry && rt) { try { await auth({ refresh_token: rt }, 'refresh_token'); return api(path, opt, false); } catch (e) {} }
+  const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+  if (!r.ok) throw new Error((j && (j.message || j.hint)) || ('Error ' + r.status));
+  return j;
+}
+
+/* ---- login ---- */
+$('#lUrl').value = S.url || ''; $('#lKey').value = S.key || ''; $('#lMail').value = S.mail || '';
+$('#lGo').onclick = async () => {
+  $('#lErr').textContent = '';
+  S = { url: $('#lUrl').value.trim().replace(/\/+$/, ''), key: $('#lKey').value.trim(), mail: $('#lMail').value.trim() };
+  try {
+    await auth({ email: S.mail, password: $('#lPass').value }, 'password');
+    const ok = await api('admins?select=email');
+    if (!ok || !ok.length) { jwt = null; throw new Error('Akun ini bukan admin. Daftarkan emailnya di tabel admins.'); }
+    localStorage.setItem('adm', JSON.stringify(S));
+    $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide');
+    show('tok');
+  } catch (e) { $('#lErr').textContent = e.message; }
+};
+$('#out').onclick = () => { jwt = rt = null; clearInterval(timer); $('#app').classList.add('hide'); $('#out').classList.add('hide'); $('#login').classList.remove('hide'); $('#lPass').value = ''; };
+
+/* ---- tab ---- */
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if (b) show(b.dataset.t); };
+function show(t) {
+  tab = t; dmRoom = null;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  ['tok','dev','grp','dm'].forEach(x => $('#t-' + x).classList.toggle('hide', x !== t));
+  $('#dmList').classList.remove('hide'); $('#dmThread').classList.add('hide');
+  clearInterval(timer); refresh();
+  if (t === 'grp' || t === 'dm') timer = setInterval(refresh, 5000);
+}
+async function refresh() {
+  try {
+    if (tab === 'tok') await loadLic();
+    else if (tab === 'dev') await loadDev();
+    else if (tab === 'grp') await loadGrp();
+    else await loadDm();
+  } catch (e) { console.error(e); }
+}
+
+/* ---- token ---- */
+function genToken() {
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', b = new Uint8Array(12); crypto.getRandomValues(b);
+  const s = [...b].map(x => A[x % 32]).join('');
+  return 'DZ-' + s.slice(0,4) + '-' + s.slice(4,8) + '-' + s.slice(8);
+}
+$('#nGo').onclick = async () => {
+  $('#nErr').textContent = '';
+  try {
+    const token = genToken(), max = Math.max(1, Math.min(50, +$('#nMax').value || 2));
+    await api('licenses', { method:'POST', body: JSON.stringify({ token, buyer: $('#nBuyer').value.trim(), max_devices: max }) });
+    $('#nTok').textContent = token; $('#nOut').classList.remove('hide'); $('#nBuyer').value = '';
+    loadLic();
+  } catch (e) { $('#nErr').textContent = e.message; }
+};
+$('#nCopy').onclick = () => navigator.clipboard.writeText($('#nTok').textContent).then(() => { $('#nCopy').textContent = 'Tersalin'; setTimeout(() => $('#nCopy').textContent = 'Salin', 1500); });
+async function loadLic() {
+  const [L, A] = await Promise.all([api('licenses?select=*&order=created_at.desc'), api('activations?select=license_id,banned')]);
+  const n = {}; A.forEach(a => { if (!a.banned) n[a.license_id] = (n[a.license_id] || 0) + 1; });
+  $('#licTbl').innerHTML = '<tr><th>Token</th><th>Pembeli</th><th>HP</th><th></th></tr>' + (L.length ? L.map(l => `<tr>
+    <td><span class="tok" style="font-size:13px">${esc(l.token)}</span><br><span class="badge ${l.active ? '' : 'off'}">${l.active ? 'aktif' : 'dicabut'}</span></td>
+    <td>${esc(l.buyer) || '-'}</td><td>${n[l.id] || 0}/${l.max_devices}</td>
+    <td><div class="row"><button class="sm ${l.active ? 'r' : ''}" data-a="tog" data-id="${l.id}" data-v="${l.active}">${l.active ? 'Cabut' : 'Aktifkan'}</button>
+    <button class="sm g" data-a="max" data-id="${l.id}" data-v="${l.max_devices}">Batas HP</button>
+    <button class="sm r" data-a="del" data-id="${l.id}">Hapus</button></div></td></tr>`).join('') : '<tr><td colspan="4">Belum ada token.</td></tr>');
+}
+$('#licTbl').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return; const id = b.dataset.id;
+  try {
+    if (b.dataset.a === 'tog') await api('licenses?id=eq.' + id, { method:'PATCH', body: JSON.stringify({ active: b.dataset.v !== 'true' }) });
+    else if (b.dataset.a === 'max') { const v = prompt('Batas perangkat untuk token ini:', b.dataset.v); if (v == null) return; await api('licenses?id=eq.' + id, { method:'PATCH', body: JSON.stringify({ max_devices: Math.max(1, Math.min(50, +v || 2)) }) }); }
+    else if (b.dataset.a === 'del') { if (!confirm('Hapus token ini beserta semua perangkat yang terdaftar?')) return; await api('licenses?id=eq.' + id, { method:'DELETE' }); }
+    loadLic();
+  } catch (err) { alert(err.message); }
+};
+
+/* ---- perangkat ---- */
+async function loadDev() {
+  const D = await api('activations?select=id,name,banned,created_at,last_seen,licenses(token,buyer)&order=last_seen.desc&limit=300');
+  $('#devTbl').innerHTML = '<tr><th>Nama</th><th>Token / pembeli</th><th>Terakhir</th><th></th></tr>' + (D.length ? D.map(d => `<tr>
+    <td>${esc(d.name)}${d.banned ? '<br><span class="badge off">diblokir</span>' : ''}</td>
+    <td>${esc(d.licenses && d.licenses.token)}<br><small>${esc(d.licenses && d.licenses.buyer)}</small></td><td>${ago(d.last_seen)}</td>
+    <td><div class="row"><button class="sm ${d.banned ? '' : 'r'}" data-a="ban" data-id="${d.id}" data-v="${d.banned}">${d.banned ? 'Buka blokir' : 'Blokir'}</button>
+    <button class="sm g" data-a="del" data-id="${d.id}">Reset</button></div></td></tr>`).join('') : '<tr><td colspan="4">Belum ada perangkat.</td></tr>');
+}
+$('#devTbl').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return; const id = b.dataset.id;
+  try {
+    if (b.dataset.a === 'ban') await api('activations?id=eq.' + id, { method:'PATCH', body: JSON.stringify({ banned: b.dataset.v !== 'true' }) });
+    else if (b.dataset.a === 'del') { if (!confirm('Reset perangkat ini? Slot HP-nya kosong lagi dan pengguna harus memasukkan token ulang.')) return; await api('activations?id=eq.' + id, { method:'DELETE' }); }
+    loadDev();
+  } catch (err) { alert(err.message); }
+};
+
+/* ---- chat ---- */
+const bubble = m => `<div class="msg ${m.is_admin ? 'adm' : ''}"><small>${esc(m.author)}${m.is_admin ? ' (Admin)' : ''} • ${ago(m.created_at)} <a href="#" data-del="${m.id}" style="color:var(--red)">hapus</a></small>${esc(m.body)}</div>`;
+async function loadGrp() {
+  const M = await api('messages?room=eq.group&order=id.desc&limit=100');
+  $('#grpBox').innerHTML = M.length ? M.slice().reverse().map(bubble).join('') : '<small>Belum ada pesan.</small>';
+}
+$('#grpSend').onclick = async () => {
+  const b = $('#grpIn').value.trim(); if (!b) return;
+  try { await api('messages', { method:'POST', body: JSON.stringify({ room:'group', author:'Admin', body:b, is_admin:true }) }); $('#grpIn').value = ''; loadGrp(); } catch (e) { alert(e.message); }
+};
+document.addEventListener('click', async e => {
+  const a = e.target.closest('[data-del]'); if (!a) return; e.preventDefault();
+  if (!confirm('Hapus pesan ini?')) return;
+  try { await api('messages?id=eq.' + a.dataset.del, { method:'DELETE' }); refresh(); } catch (err) { alert(err.message); }
+});
+async function loadDm() {
+  if (dmRoom) {
+    const M = await api('messages?room=eq.' + encodeURIComponent(dmRoom) + '&order=id.desc&limit=100');
+    $('#dmBox').innerHTML = M.length ? M.slice().reverse().map(bubble).join('') : '<small>Belum ada pesan.</small>';
+    return;
+  }
+  const M = await api('messages?room=like.dm:*&order=id.desc&limit=400');
+  const seen = {}; M.forEach(m => { if (!seen[m.room]) seen[m.room] = m; });
+  const rooms = Object.values(seen);
+  if (!rooms.length) { $('#dmList').innerHTML = '<small>Belum ada pesan pribadi.</small>'; return; }
+  const ids = rooms.map(r => r.room.slice(3)).join(',');
+  const A = await api('activations?select=id,name,licenses(buyer)&id=in.(' + ids + ')');
+  const by = {}; A.forEach(a => by[a.id] = a);
+  $('#dmList').innerHTML = rooms.map(r => { const a = by[r.room.slice(3)] || {}; return `<div class="msg" data-room="${esc(r.room)}" data-name="${esc(a.name || '?')}" style="cursor:pointer"><small>${esc(a.name || '?')} • ${esc(a.licenses && a.licenses.buyer)} • ${ago(r.created_at)}</small>${r.is_admin ? 'Kamu: ' : ''}${esc(r.body.slice(0, 90))}</div>`; }).join('');
+}
+$('#dmList').onclick = e => { const d = e.target.closest('[data-room]'); if (!d) return; dmRoom = d.dataset.room; $('#dmWho').textContent = d.dataset.name; $('#dmList').classList.add('hide'); $('#dmThread').classList.remove('hide'); loadDm(); };
+$('#dmBack').onclick = () => { dmRoom = null; $('#dmThread').classList.add('hide'); $('#dmList').classList.remove('hide'); loadDm(); };
+$('#dmSend').onclick = async () => {
+  const b = $('#dmIn').value.trim(); if (!b || !dmRoom) return;
+  try { await api('messages', { method:'POST', body: JSON.stringify({ room: dmRoom, author:'Admin', body:b, is_admin:true }) }); $('#dmIn').value = ''; loadDm(); } catch (e) { alert(e.message); }
+};
+</script>
+</body>
+</html>

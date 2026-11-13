@@ -1,3 +1,4 @@
-# Salin jadi keys.properties (file ini tidak ikut ke git). Dipakai kalau build lokal.
+# Salin jadi keys.properties (tidak ikut ke git). Hanya untuk build lokal.
 YT_API_KEY=isi_key_youtube
-GEMINI_API_KEY=isi_key_gemini
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_ANON_KEY=isi_anon_atau_publishable_key
