@@ -2,14 +2,23 @@ package com.dikzcryz.app
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.provider.Settings
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import org.json.JSONArray
 import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
 
 /** Jembatan JS -> Android. Dipanggil dari web sebagai `Native.xxx()`. */
-class Bridge(private val a: Activity) {
+class Bridge(private val a: Activity, private val web: WebView) {
     @JavascriptInterface
     fun config(): String = JSONObject()
         .put("yt", BuildConfig.YT_API_KEY)
@@ -68,6 +77,41 @@ class Bridge(private val a: Activity) {
                 a.startActivity(Intent.createChooser(i, "Bagikan"))
             } catch (_: Exception) { }
         }
+    }
+
+    /** Layar penuh: putar ke landscape dan sembunyikan bilah sistem. */
+    @JavascriptInterface
+    fun setFullscreen(on: Boolean) {
+        a.runOnUiThread {
+            a.requestedOrientation =
+                if (on) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            val c = WindowCompat.getInsetsController(a.window, a.window.decorView)
+            if (on) {
+                c.hide(WindowInsetsCompat.Type.systemBars())
+                c.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            } else {
+                c.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
+    /** Saran pencarian (layanan tidak resmi). Hasil dikirim balik ke JS lewat window.__sug(id, daftar). */
+    @JavascriptInterface
+    fun suggest(q: String, id: String) {
+        Thread {
+            var out = "[]"
+            try {
+                val u = URL("https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&hl=id&q=" + URLEncoder.encode(q, "UTF-8"))
+                val c = u.openConnection() as HttpURLConnection
+                c.connectTimeout = 4000
+                c.readTimeout = 4000
+                c.setRequestProperty("User-Agent", "Mozilla/5.0")
+                val body = c.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+                out = JSONArray(body).getJSONArray(1).toString()
+            } catch (_: Exception) { }
+            val js = "window.__sug && window.__sug(" + JSONObject.quote(id) + "," + out + ")"
+            a.runOnUiThread { web.evaluateJavascript(js, null) }
+        }.start()
     }
 
     @JavascriptInterface fun exitApp() { a.runOnUiThread { a.finish() } }

@@ -136,7 +136,6 @@
     const d = e.target.closest('.ydots'); if (d) { menu(list[+d.dataset.d], mode === 'hist'); return; }
     const c = e.target.closest('.yv'); if (c) play(list[+c.dataset.i], list);
   });
-  $('#ytForm').addEventListener('submit', e => { e.preventDefault(); const q = $('#ytQ').value.trim(); if (q) { $('#ytQ').blur(); load('search', q); } });
   $('#ytTabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) load(b.dataset.m, b.dataset.m === 'short' ? $('#ytQ').value.trim() : ''); });
 
   /* ---------- menu titik tiga ---------- */
@@ -152,12 +151,23 @@
   const closeMenu = () => $('#ymenu').classList.remove('open');
   $('#ymenu').addEventListener('click', e => {
     if (e.target.id === 'ymenu') { closeMenu(); return; }
-    const b = e.target.closest('[data-a]'); if (!b || !menuV) return;
+    const b = e.target.closest('[data-a],[data-rate],[data-q]'); if (!b) return;
+    if (b.dataset.rate) { setRate(+b.dataset.rate); closeMenu(); return; }
+    if (b.dataset.q != null) {
+      const v = nextArr[+b.dataset.q]; closeMenu();
+      if (v) { queue = queue.filter(x => x.id !== v.id); play(v, ctx); }
+      return;
+    }
+    const act = b.dataset.a;
+    if (act === 'rate') { openRate(); return; }
+    if (act === 'auto') { toggleAuto(); openSet(); return; }
+    if (act === 'loop') { loop = !loop; openSet(); return; }
+    if (!menuV) return;
     const v = menuV; closeMenu();
-    if (b.dataset.a === 'queue') addQ(v);
-    else if (b.dataset.a === 'share') share(v);
-    else if (b.dataset.a === 'open') openYt(v);
-    else if (b.dataset.a === 'del') { ls.set('dz_hist', hist().filter(x => x.id !== v.id)); if (mode === 'hist') { list = hist(); draw(); } }
+    if (act === 'queue') addQ(v);
+    else if (act === 'share') share(v);
+    else if (act === 'open') openYt(v);
+    else if (act === 'del') { ls.set('dz_hist', hist().filter(x => x.id !== v.id)); if (mode === 'hist') { list = hist(); draw(); } }
   });
   function addQ(v) {
     if (curV && curV.id === v.id) { toast('Video ini sedang diputar'); return; }
@@ -234,7 +244,8 @@
   }
   $('#wMore').onclick = () => { $('#wDesc').classList.toggle('hide'); $('#wMore').classList.toggle('open'); };
   $('#wComBtn').onclick = () => { const b = $('#wComs'); b.classList.toggle('hide'); if (!b.classList.contains('hide') && !comLoaded) loadComments(); };
-  $('#wAuto').onclick = () => { auto = !auto; $('#wAuto').classList.toggle('on', auto); };
+  function toggleAuto() { auto = !auto; $('#wAuto').classList.toggle('on', auto); }
+  $('#wAuto').onclick = toggleAuto;
   $('#aShare').onclick = () => curV && share(curV);
   $('#aOpen').onclick = () => curV && openYt(curV);
   $('#aPop').onclick = () => { if (active) { view = 'feed'; decideMode(); } };
@@ -248,6 +259,7 @@
     if (active) pw.classList.add(watch ? 'big' : 'mini');
     spacer.classList.toggle('on', watch);
     document.body.classList.toggle('mini-on', active && !watch);
+    if (!watch) setFs(false);
   }
   function expand() { view = 'watch'; if (page() !== 'yt') go('yt'); else decideMode(); }
   window.addEventListener('page', e => {
@@ -257,6 +269,8 @@
   });
   window.__ytBack = () => {
     if ($('#ymenu').classList.contains('open')) { closeMenu(); return true; }
+    if (!$('#sview').classList.contains('hide')) { closeSearch(); return true; }
+    if (fs) { setFs(false); return true; }
     if (page() === 'yt' && active && view === 'watch') { view = 'feed'; decideMode(); return true; }
     return false;
   };
@@ -280,19 +294,28 @@
     });
   };
   function onState(e) {
-    const playing = e.data === 1;
+    playing = e.data === 1;
     pw.classList.toggle('playing', playing);
-    $('#mPlay').innerHTML = ico(playing ? 'pause' : 'play');
+    const ic = ico(playing ? 'pause' : 'play');
+    $('#mPlay').innerHTML = ic; $('#pcenter').innerHTML = ic;
+    if (playing) {
+      try { if (P.getPlaybackRate && P.getPlaybackRate() !== rate) P.setPlaybackRate(rate); } catch (x) {}
+      showCtl();
+    } else showCtl(true);
     if (e.data === 2) saveProg();
-    if (e.data === 0 && curV) { prog[curV.id] = 100; saveProg(); next(); }
+    if (e.data === 0 && curV) {
+      prog[curV.id] = 100; saveProg();
+      if (loop) { P.seekTo(0, true); P.playVideo(); } else next();
+    }
   }
   function loadVideo(v) {
     const p = pct(v.id), start = (p >= 3 && p < 95 && v.sec) ? Math.floor(v.sec * p / 100) : 0;
     const o = { videoId: v.id, startSeconds: start };
     if (ready) P.loadVideoById(o); else { pending = o; ensureApi(); }
   }
-  function play(v, src) {
+  function play(v, src, fromPrev) {
     if (!v) return;
+    if (curV && !fromPrev && curV.id !== v.id) { backStack.push(curV); if (backStack.length > 30) backStack.shift(); }
     curV = v; if (src) ctx = src; active = true; view = 'watch'; comLoaded = false;
     addHist(v);
     $('#mtitle').textContent = v.t; $('#mchan').textContent = v.c;
@@ -314,14 +337,14 @@
     if (!ready || !P || !P.getDuration || !curV || seeking) return;
     const d = P.getDuration(), t = P.getCurrentTime();
     $('#tcur').textContent = fmtT(t); $('#tdur').textContent = fmtT(d);
-    $('#seek').value = d ? Math.round(t / d * 1000) : 0;
+    const sv0 = d ? Math.round(t / d * 1000) : 0;
+    $('#seek').value = sv0; $('#seek').style.setProperty('--p', (sv0 / 10) + '%');
     if (d > 0 && P.getPlayerState && P.getPlayerState() === 1) {
       const p = Math.min(100, Math.round(t / d * 100));
       if (p !== prog[curV.id]) { prog[curV.id] = p; if (++tickN % 10 === 0) saveProg(); }
     }
   }
   const toggle = () => { if (!ready) return; P.getPlayerState() === 1 ? P.pauseVideo() : P.playVideo(); };
-  $('#shield').onclick = () => { if (pw.classList.contains('mini')) expand(); else toggle(); };
   $('#mtxt').onclick = expand;
   $('#mPlay').onclick = toggle;
   $('#mClose').onclick = () => {
@@ -329,6 +352,118 @@
     active = false; curV = null; clearInterval(ticker); pw.classList.remove('playing'); decideMode();
   };
   const seek = $('#seek');
-  seek.addEventListener('input', () => { seeking = true; });
-  seek.addEventListener('change', () => { if (ready) P.seekTo(P.getDuration() * seek.value / 1000, true); seeking = false; });
+  seek.addEventListener('input', () => { seeking = true; seek.style.setProperty('--p', (seek.value / 10) + '%'); showCtl(true); });
+  seek.addEventListener('change', () => { if (ready) P.seekTo(P.getDuration() * seek.value / 1000, true); seeking = false; showCtl(); });
+
+  /* ---------- kontrol player (overlay) ---------- */
+  let playing = false, ctlT = null, fs = false, loop = false, backStack = [];
+  let rate = +ls.get('dz_rate', 1) || 1;
+  const fmtRate = r => (r === 1 ? '1' : String(r)) + 'x';
+  $('#cRate').textContent = fmtRate(rate);
+
+  function showCtl(stick) {
+    pw.classList.add('ctl'); clearTimeout(ctlT);
+    if (!stick && playing) ctlT = setTimeout(() => pw.classList.remove('ctl'), 3000);
+  }
+  $('#shield').onclick = () => {
+    if (pw.classList.contains('mini')) { expand(); return; }
+    if (pw.classList.contains('ctl') && playing) { pw.classList.remove('ctl'); clearTimeout(ctlT); } else showCtl();
+  };
+  // klik pada tombol kontrol tidak boleh ikut menyembunyikan overlay
+  $('#pctrl').addEventListener('click', e => { if (e.target !== $('#pctrl')) { e.stopPropagation(); showCtl(playing ? false : true); } });
+
+  function prev() {
+    if (!ready || !curV) return;
+    if (P.getCurrentTime() > 3 || !backStack.length) { P.seekTo(0, true); return; }
+    play(backStack.pop(), ctx, true);
+  }
+  function nextManual() {
+    if (queue.length) { play(queue.shift(), ctx); return; }
+    const l = curV ? upNext() : [];
+    if (l.length) play(l[0], ctx); else toast('Tidak ada video berikutnya');
+  }
+  function setFs(on) {
+    if (fs === on) return;
+    fs = on; pw.classList.toggle('fs', on);
+    if (N && N.setFullscreen) N.setFullscreen(on);
+    $('#cFull').innerHTML = ico(on ? 'fullx' : 'full');
+  }
+  function setRate(r) {
+    rate = r; ls.set('dz_rate', r); $('#cRate').textContent = fmtRate(r);
+    try { if (ready && P.setPlaybackRate) P.setPlaybackRate(r); } catch (e) {}
+  }
+  function openSheet(html) { $('#ymenuCard').innerHTML = html; $('#ymenu').classList.add('open'); }
+  function openRate() {
+    let rs = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    try { const a = P.getAvailablePlaybackRates(); if (a && a.length) rs = a; } catch (e) {}
+    openSheet('<div class="mi title">Kecepatan</div>' + rs.map(r => `<button class="mi" data-rate="${r}">${r === rate ? '• ' : ''}${r === 1 ? 'Normal' : r + 'x'}</button>`).join(''));
+  }
+  function openSet() {
+    openSheet(`<div class="mi title">Pengaturan pemutar</div>
+      <button class="mi" data-a="rate">Kecepatan<span class="sp"></span><small>${rate === 1 ? 'Normal' : rate + 'x'}</small></button>
+      <button class="mi" data-a="auto">Antrean otomatis<span class="sp"></span><small>${auto ? 'Aktif' : 'Mati'}</small></button>
+      <button class="mi" data-a="loop">Ulangi video<span class="sp"></span><small>${loop ? 'Aktif' : 'Mati'}</small></button>`);
+  }
+  function openQueue() {
+    if (!curV) return; renderNext();
+    const rows = nextArr.slice(0, 15).map((v, i) => `<button class="mi" data-q="${i}"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700">${i < queue.length ? '<span class="tag">Antrean</span>' : ''}${esc(v.t)}</span></button>`).join('');
+    openSheet('<div class="mi title">Antrean &amp; berikutnya</div>' + (rows || '<div class="mi">Belum ada video berikutnya.</div>'));
+  }
+  $('#cPrev').onclick = prev;
+  $('#cNext').onclick = nextManual;
+  $('#pcenter').onclick = toggle;
+  $('#cClose').onclick = () => { view = 'feed'; decideMode(); };
+  $('#cRate').onclick = openRate;
+  $('#cQ').onclick = openQueue;
+  $('#cSet').onclick = openSet;
+  $('#cFull').onclick = () => setFs(!fs);
+
+  /* ---------- pencarian layar penuh ---------- */
+  const sv = $('#sview'), sQ = $('#sQ'), sList = $('#sList');
+  let sugs = [], sugId = 0, sugT = null;
+  const shist = () => ls.get('dz_sh', []);
+  const addSh = q => ls.set('dz_sh', [q, ...shist().filter(x => x.toLowerCase() !== q.toLowerCase())].slice(0, 30));
+  const srow = (i, t) => `<div class="srow" data-q="${esc(t)}"><span class="sic">${ico(i)}</span><span class="st">${esc(t)}</span><button type="button" class="snw" data-fill="${esc(t)}" aria-label="Isi kolom">${ico('nw')}</button></div>`;
+  function renderS() {
+    const q = sQ.value.trim().toLowerCase();
+    const h = shist().filter(x => !q || x.toLowerCase().includes(q)).slice(0, q ? 3 : 10);
+    const seen = new Set(h.map(x => x.toLowerCase()));
+    const s2 = sugs.filter(x => !seen.has(x.toLowerCase())).slice(0, 10);
+    sList.innerHTML = h.map(x => srow('hist', x)).concat(s2.map(x => srow('search', x))).join('')
+      + (!q && h.length ? '<div class="srow clr" id="sClr">Hapus riwayat</div>' : '');
+  }
+  function fetchSug(q) {
+    q = q.trim();
+    if (!q) { sugs = []; sugId++; renderS(); return; }
+    const id = ++sugId;
+    if (N && N.suggest) N.suggest(q, String(id));
+    else fetch('https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&hl=id&q=' + encodeURIComponent(q))
+      .then(r => r.json()).then(j => window.__sug(String(id), j[1])).catch(() => {});
+  }
+  window.__sug = (id, arr) => {
+    if (+id !== sugId) return;
+    sugs = Array.isArray(arr) ? arr.map(String) : [];
+    if (!sv.classList.contains('hide')) renderS();
+  };
+  function openSearch() {
+    sv.classList.remove('hide'); sQ.value = $('#ytQ').value; sugs = []; renderS();
+    setTimeout(() => { sQ.focus(); try { sQ.setSelectionRange(sQ.value.length, sQ.value.length); } catch (e) {} }, 60);
+    if (sQ.value.trim()) fetchSug(sQ.value);
+  }
+  function closeSearch() { sv.classList.add('hide'); sQ.blur(); }
+  function doSearch(q) {
+    q = (q || '').trim(); if (!q) return;
+    addSh(q); $('#ytQ').value = q; closeSearch(); load('search', q);
+  }
+  $('#ytForm').addEventListener('click', openSearch);
+  $('#sBack').onclick = closeSearch;
+  $('#sClear').onclick = () => { sQ.value = ''; sugs = []; sugId++; renderS(); sQ.focus(); };
+  $('#sform').addEventListener('submit', e => { e.preventDefault(); doSearch(sQ.value); });
+  sQ.addEventListener('input', () => { renderS(); clearTimeout(sugT); sugT = setTimeout(() => fetchSug(sQ.value), 180); });
+  sList.addEventListener('click', e => {
+    if (e.target.closest('#sClr')) { ls.set('dz_sh', []); renderS(); return; }
+    const f = e.target.closest('.snw');
+    if (f) { sQ.value = f.dataset.fill; renderS(); fetchSug(sQ.value); sQ.focus(); return; }
+    const r = e.target.closest('.srow'); if (r && r.dataset.q) doSearch(r.dataset.q);
+  });
 })();

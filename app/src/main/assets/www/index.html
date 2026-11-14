@@ -108,7 +108,7 @@
     <div id="yFeed">
       <form id="ytForm" class="searchbar neo">
         <span data-ico="search"></span>
-        <input id="ytQ" placeholder="Cari video atau musik" enterkeyhint="search">
+        <input id="ytQ" placeholder="Cari video atau musik" readonly>
       </form>
       <div id="ytTabs">
         <button data-m="home" class="on">Utama</button>
@@ -161,20 +161,48 @@
   </section>
 </main>
 
-<!-- PLAYER (satu iframe, mode big / mini tanpa reload) -->
+<!-- PLAYER (satu iframe, mode big / mini / layar penuh tanpa reload) -->
 <div id="pw">
   <div id="fbox">
     <div id="yt"></div>
-    <div id="shield"><button id="pcenter" class="cplay" aria-label="Putar"><span data-ico="play"></span></button></div>
+    <div id="shield">
+      <div id="pctrl">
+        <div class="ct">
+          <button id="cClose" aria-label="Kecilkan"><span data-ico="x"></span></button>
+          <span class="sp"></span>
+          <button id="cRate" class="txt">1x</button>
+          <button id="cQ" aria-label="Antrean"><span data-ico="list"></span></button>
+          <button id="cSet" aria-label="Pengaturan"><span data-ico="gear"></span></button>
+        </div>
+        <div class="cc">
+          <button id="cPrev" aria-label="Sebelumnya"><span data-ico="prev"></span></button>
+          <button id="pcenter" class="big" aria-label="Putar/jeda"><span data-ico="play"></span></button>
+          <button id="cNext" aria-label="Berikutnya"><span data-ico="next"></span></button>
+        </div>
+        <div class="cb">
+          <span id="tcur">0:00</span>
+          <input type="range" id="seek" min="0" max="1000" value="0">
+          <span id="tdur">0:00</span>
+          <button id="cFull" aria-label="Layar penuh"><span data-ico="full"></span></button>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="mtxt"><b id="mtitle"></b><small id="mchan"></small></div>
   <div id="mbtns">
     <button id="mPlay" aria-label="Putar/jeda"><span data-ico="pause"></span></button>
     <button id="mClose" aria-label="Tutup"><span data-ico="x"></span></button>
   </div>
-  <div id="pctl">
-    <div class="seekrow"><span id="tcur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="tdur">0:00</span></div>
-  </div>
+</div>
+
+<!-- PENCARIAN YOUTUBE (layar penuh) -->
+<div id="sview" class="hide">
+  <form id="sform" autocomplete="off">
+    <button type="button" id="sBack" aria-label="Kembali"><span data-ico="back"></span></button>
+    <input id="sQ" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" placeholder="Cari video atau musik">
+    <button type="button" id="sClear" aria-label="Hapus"><span data-ico="x"></span></button>
+  </form>
+  <div id="sList"></div>
 </div>
 
 <div id="ymenu"><div class="sheet-card neo" id="ymenuCard"></div></div>

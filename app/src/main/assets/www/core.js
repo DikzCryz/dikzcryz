@@ -10,7 +10,7 @@ const ls = {
 };
 
 /* Nomor WA developer (format 628xxxxxxxxxx). Bisa juga diisi lewat Sidebar > Pengaturan. */
-const DEV_WA = '6281717445134';
+const DEV_WA = '';
 
 let baseCfg = { yt: '', sbUrl: '', sbKey: '' };
 try { if (N) baseCfg = JSON.parse(N.config()); } catch (e) {}
@@ -41,6 +41,14 @@ const IC = {
   palette: '<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.6-2-.5-1.2.2-2.5 1.6-2.5H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5z"/><circle cx="7.5" cy="11" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="16" cy="8" r="1"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  back: '<path d="M19 12H5M12 5l-7 7 7 7"/>',
+  hist: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+  nw: '<path d="M17 17L7 7M7 15V7h8"/>',
+  prev: '<path d="M6 5v14M19 5L9 12l10 7z"/>',
+  next: '<path d="M18 5v14M5 5l10 7-10 7z"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  full: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  fullx: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
   dots: '<path d="M12 5v.01M12 12v.01M12 19v.01" stroke-width="3.6"/>',
   chevd: '<path d="M6 9l6 6 6-6"/>',
   like: '<path d="M7 11v9H4v-9zM7 11l4-8c1.5 0 2.5 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/>',

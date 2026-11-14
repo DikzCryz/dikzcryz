@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             allowFileAccess = false
             allowContentAccess = false
         }
-        web.addJavascriptInterface(Bridge(this), "Native")
+        web.addJavascriptInterface(Bridge(this, web), "Native")
         // Tanpa ini, <input type="file"> di WebView tidak melakukan apa-apa (foto profil tidak bisa dipilih).
         web.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
