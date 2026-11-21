@@ -14,7 +14,7 @@
 
 <!-- GERBANG TOKEN: video diputar berulang terus sampai user berhasil masuk -->
 <div id="gate">
-  <video id="gateVid" src="intro.mp4" muted loop autoplay playsinline></video>
+  <img id="gatePoster" src="gate_poster.jpg" alt="" hidden><video id="gateVid" muted loop autoplay playsinline></video>
   <div class="gate-shade"></div>
   <form id="gateForm" class="gate-card neo" autocomplete="off">
     <div class="brand big">DikzCryz</div>
@@ -65,6 +65,14 @@
     </div>
   </div>
   <input type="file" id="bgIn" accept="image/*" hidden>
+  <label>Mode tampilan
+    <select id="sPerf" class="fld">
+      <option value="auto">Otomatis</option>
+      <option value="light">Ringan</option>
+      <option value="full">Penuh</option>
+    </select>
+  </label>
+  <small id="ramInfo" class="ram-info"></small>
   <label>API key YouTube<input id="sYt" class="fld" placeholder="kosong = pakai bawaan"></label>
   <label>Nomor WA developer<input id="sWa" class="fld" inputmode="numeric" placeholder="628xxxxxxxxxx"></label>
   <button id="sSave" class="btn">Simpan</button>

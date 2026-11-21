@@ -1,6 +1,7 @@
 package com.dikzcryz.app
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.media.audiofx.AudioEffect
@@ -20,11 +21,19 @@ import java.net.URLEncoder
 /** Jembatan JS -> Android. Dipanggil dari web sebagai `Native.xxx()`. */
 class Bridge(private val a: Activity, private val web: WebView) {
     @JavascriptInterface
-    fun config(): String = JSONObject()
+    fun config(): String {
+        val am = a.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
+        val info = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(info)
+        val ramMb = (info.totalMem / (1024L * 1024L)).toInt()
+        return JSONObject()
+        .put("ram", ramMb)
+        .put("lowRam", am.isLowRamDevice)
         .put("yt", BuildConfig.YT_API_KEY)
         .put("sbUrl", BuildConfig.SUPABASE_URL)
         .put("sbKey", BuildConfig.SUPABASE_ANON_KEY)
         .toString()
+    }
 
     /** ID perangkat yang stabil (di-hash), dipakai untuk membatasi jumlah perangkat per token. */
     @JavascriptInterface

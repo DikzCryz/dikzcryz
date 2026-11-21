@@ -34,7 +34,7 @@
       if (full) list.innerHTML = `<div class="note">${esc(e.message)}</div>`;
     }
   }
-  function start() { stop(); poll(true); timer = setInterval(() => poll(false), 3000); }
+  function start() { stop(); poll(true); timer = setInterval(() => poll(false), window.DZ_PERF && window.DZ_PERF.light ? 6000 : 3000); }
   function stop() { clearInterval(timer); timer = null; }
   function setRoom(r) {
     room = r; token++; last = 0;

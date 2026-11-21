@@ -1,4 +1,4 @@
-# DikzCryz v4
+# DikzCryz v6
 
 Isi: chat komunitas + chat pribadi ke admin, YouTube, Equalizer, profil, tema, token per pembeli.
 
@@ -27,5 +27,8 @@ gh secret set KEY_PASSWORD
 ## 4. Web admin
 Buka `admin/index.html` (dari laptop, atau upload ke Netlify/Cloudflare Pages). Isi URL + key + email/password admin. Di sana: buat token, atur batas HP, cabut, blokir, hapus pesan, balas chat pribadi. File ini TIDAK ikut ke dalam APK.
 
-## 5. Isi nomor WA developer
+## 5. Mode tampilan v6
+Pengaturan menyediakan mode Otomatis, Ringan, dan Penuh. Mode Otomatis membaca RAM perangkat; mode Ringan memakai wallpaper 720px, poster statis di gerbang, mengurangi animasi, dan memperlambat polling chat.
+
+## 6. Isi nomor WA developer
 `app/src/main/assets/www/core.js` > `DEV_WA` (format 628xxxxxxxxxx).

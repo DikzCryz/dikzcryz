@@ -15,6 +15,10 @@ const DEV_WA = '';
 let baseCfg = { yt: '', sbUrl: '', sbKey: '' };
 try { if (N) baseCfg = JSON.parse(N.config()); } catch (e) {}
 let over = ls.get('dz_cfg', {});
+const deviceCfg = (() => { try { return N ? JSON.parse(N.config()) : {}; } catch (e) { return {}; } })();
+const perfPref = () => ls.get('dz_perf', 'auto');
+const isLight = () => perfPref() === 'light' || (perfPref() === 'auto' && ((deviceCfg.ram || 0) < 4400 || deviceCfg.lowRam));
+window.DZ_PERF = { get light() { return isLight(); }, get ram() { return deviceCfg.ram || 0; } };
 const C = () => ({
   yt: over.yt || baseCfg.yt,
   wa: over.wa || DEV_WA,
@@ -116,32 +120,58 @@ window.__back = () => {
 };
 
 /* ===== boot ===== */
-/* ===== background (wallpaper) yang bisa diganti user ===== */
+/* ===== wallpaper dan mode performa ===== */
+function applyPerf() {
+  document.body.classList.toggle('light-mode', isLight());
+  const gv = $('#gateVid'), gp = $('#gatePoster');
+  if (gv && gp) { if (isLight()) { gv.pause(); gv.removeAttribute('src'); gv.load(); gp.hidden = false; } else { gp.hidden = true; if (!gv.getAttribute('src')) { gv.src = 'intro.mp4'; gv.load(); gv.play().catch(() => {}); } } }
+  const v = $('#sPerf'); if (v) v.value = perfPref();
+  const info = $('#ramInfo');
+  if (info) info.textContent = deviceCfg.ram ? `RAM terbaca: ${(deviceCfg.ram / 1024).toFixed(1)} GB${deviceCfg.lowRam ? ' · perangkat RAM rendah' : ''}` : 'Informasi RAM tidak tersedia di pratinjau browser.';
+  applyBg();
+}
 function applyBg() {
   const d = ls.get('dz_bg', '');
   const root = document.documentElement.style;
-  if (d) root.setProperty('--wall', 'url("' + d + '")'); else root.removeProperty('--wall');
-  const pv = $('#bgPrev'); if (pv) pv.style.backgroundImage = d ? 'url("' + d + '")' : 'url("hero.jpg")';
+  const fallback = isLight() ? 'url("hero_s.jpg")' : 'url("hero.jpg")';
+  const pv = $('#bgPrev');
+  if (pv) pv.style.backgroundImage = d ? `url("${d}")` : 'url("hero.jpg")';
+  if (!d) { root.setProperty('--wall', fallback); return; }
+  if (!isLight()) { root.setProperty('--wall', `url("${d}")`); return; }
+  const cached = ls.get('dz_bg_lite', null);
+  if (cached && cached.source === d) { root.setProperty('--wall', `url("${cached.data}")`); return; }
+  const im = new Image();
+  im.onload = () => {
+    const k = Math.min(1, 720 / im.width, 1280 / im.height);
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width*k)); c.height = Math.max(1, Math.round(im.height*k));
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    const data = c.toDataURL('image/jpeg', .68);
+    root.setProperty('--wall', `url("${data}")`);
+    ls.set('dz_bg_lite', { source: d, data });
+  };
+  im.onerror = () => root.setProperty('--wall', fallback);
+  im.src = d;
 }
 function setupBg() {
   $('#bgPick').onclick = () => $('#bgIn').click();
-  $('#bgReset').onclick = () => { try { localStorage.removeItem('dz_bg'); } catch (e) {} applyBg(); toast('Background kembali ke bawaan'); };
+  $('#bgReset').onclick = () => { try { localStorage.removeItem('dz_bg'); localStorage.removeItem('dz_bg_lite'); } catch (e) {} applyBg(); toast('Wallpaper kembali ke bawaan'); };
   $('#bgIn').addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return;
     const im = new Image(), url = URL.createObjectURL(f);
     im.onload = () => {
-      const k = Math.min(1, 1080 / im.width, 2400 / im.height);
-      const c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const max = isLight() ? 720 : 1080;
+      const k = Math.min(1, max / im.width, (isLight() ? 1280 : 2400) / im.height);
+      const c = document.createElement('canvas'); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k);
       c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      const data = c.toDataURL('image/jpeg', .82);
-      try { localStorage.setItem('dz_bg', JSON.stringify(data)); applyBg(); toast('Background diganti'); }
+      const data = c.toDataURL('image/jpeg', isLight() ? .68 : .82);
+      try { localStorage.setItem('dz_bg', JSON.stringify(data)); localStorage.removeItem('dz_bg_lite'); applyBg(); toast('Wallpaper diganti'); }
       catch (err) { toast('Gambar terlalu besar, pilih yang lain'); }
     };
     im.onerror = () => toast('Gambar tidak bisa dibaca');
     im.src = url; e.target.value = '';
   });
-  applyBg();
+  applyPerf();
 }
 
 function boot() {
@@ -164,12 +194,13 @@ function boot() {
 
   $('#siSet').onclick = () => {
     $('#sYt').value = over.yt || ''; $('#sWa').value = over.wa || '';
+    $('#sPerf').value = perfPref(); applyPerf();
     sideOpen(false); sheetOpen(true);
   };
   $('#sheetClose').onclick = () => sheetOpen(false);
   $('#sSave').onclick = () => {
     over = { yt: $('#sYt').value.trim(), wa: $('#sWa').value.replace(/\D/g, '') };
-    ls.set('dz_cfg', over); sheetOpen(false); toast('Pengaturan disimpan');
+    ls.set('dz_cfg', over); ls.set('dz_perf', $('#sPerf').value); applyPerf(); sheetOpen(false); toast('Pengaturan disimpan');
   };
   const wa = () => {
     const n = C().wa;

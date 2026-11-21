@@ -58,7 +58,7 @@
     const d = dur(cd.duration), th = sn.thumbnails || {};
     return {
       id, t: dec(sn.title || ''), c: dec(sn.channelTitle || ''), ci: sn.channelId || '',
-      img: (th.maxres && th.maxres.url) || ('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg'),
+      img: window.DZ_PERF && window.DZ_PERF.light ? ('https://i.ytimg.com/vi/' + id + '/mqdefault.jpg') : ((th.maxres && th.maxres.url) || ('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg')),
       dur: sn.liveBroadcastContent === 'live' ? 'LIVE' : d.t, sec: d.s,
       views: st.viewCount != null ? +st.viewCount : null,
       likes: st.likeCount != null ? +st.likeCount : null,
