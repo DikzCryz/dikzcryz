@@ -88,13 +88,14 @@ function reveal() {
 }
 
 /* ===== navigasi ===== */
-const PAGES = ['home', 'chat', 'yt', 'eq', 'me'];
+const PAGES = ['home', 'chat', 'ai', 'yt', 'eq', 'me'];
 let cur = 'home';
 function go(p) {
   cur = p;
   document.body.dataset.page = p;
   $$('.page').forEach(e => e.classList.toggle('active', e.id === 'page-' + p));
   $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === p));
+  $('#ind').style.width = (100 / PAGES.length) + '%';
   $('#ind').style.transform = `translateX(${PAGES.indexOf(p) * 100}%)`;
   window.scrollTo(0, 0);
   window.dispatchEvent(new CustomEvent('page', { detail: p }));
@@ -193,13 +194,14 @@ function boot() {
   $$('.sw-t').forEach(b => b.onclick = () => setTheme(b.dataset.t));
 
   $('#siSet').onclick = () => {
-    $('#sYt').value = over.yt || ''; $('#sWa').value = over.wa || '';
+    $('#sYt').value = over.yt || ''; $('#sWa').value = over.wa || ''; $('#sAiUrl').value = ls.get('dz_ai_url', '');
     $('#sPerf').value = perfPref(); applyPerf();
     sideOpen(false); sheetOpen(true);
   };
   $('#sheetClose').onclick = () => sheetOpen(false);
   $('#sSave').onclick = () => {
     over = { yt: $('#sYt').value.trim(), wa: $('#sWa').value.replace(/\D/g, '') };
+    ls.set('dz_ai_url', $('#sAiUrl').value.trim().replace(/\/$/, ''));
     ls.set('dz_cfg', over); ls.set('dz_perf', $('#sPerf').value); applyPerf(); sheetOpen(false); toast('Pengaturan disimpan');
   };
   const wa = () => {

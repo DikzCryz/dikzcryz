@@ -1,6 +1,9 @@
 .gradle/
 build/
+**/build/
 local.properties
 keys.properties
-log.txt
-*.apk
+*.jks
+*.keystore
+server/.env
+server/node_modules/

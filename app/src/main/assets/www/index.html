@@ -75,6 +75,7 @@
   <small id="ramInfo" class="ram-info"></small>
   <label>API key YouTube<input id="sYt" class="fld" placeholder="kosong = pakai bawaan"></label>
   <label>Nomor WA developer<input id="sWa" class="fld" inputmode="numeric" placeholder="628xxxxxxxxxx"></label>
+  <label>Alamat server AI Sairi<input id="sAiUrl" class="fld" inputmode="url" placeholder="https://server-ai-kamu.example.com"></label>
   <button id="sSave" class="btn">Simpan</button>
 </div></div>
 
@@ -93,6 +94,7 @@
     <div class="h2 pill neo rv">Fitur</div>
     <div class="grid2">
       <button class="neo fcard rv" data-go="chat"><span data-ico="chat"></span><b>Chat</b><small>Komunitas &amp; admin</small></button>
+      <button class="neo fcard rv" data-go="ai"><span data-ico="ai"></span><b>AI Sairi</b><small>Chat &amp; Voice Note</small></button>
       <button class="neo fcard rv" data-go="yt"><span data-ico="yt"></span><b>YouTube</b><small>Video &amp; musik</small></button>
       <button class="neo fcard rv" data-go="eq"><span data-ico="eq"></span><b>Equalizer</b><small>Atur suara</small></button>
       <button class="neo fcard rv" data-go="me"><span data-ico="user"></span><b>Profil</b><small>Foto &amp; bio</small></button>
@@ -107,6 +109,22 @@
     <form id="chatForm" class="chatbar neo">
       <textarea id="chatIn" rows="1" maxlength="1000" placeholder="Tulis pesan..."></textarea>
       <button class="ibtn go" type="submit" aria-label="Kirim"><span data-ico="send"></span></button>
+    </form>
+  </section>
+
+  <!-- AI SAIRI -->
+  <section id="page-ai" class="page">
+    <div class="ai-head neo">
+      <div class="ai-orb"><span data-ico="ai"></span></div>
+      <div><b>SAIRI AI</b><small>Asisten virtual DikzCryz</small></div>
+      <span class="sp"></span><span class="ai-status" id="aiStatus">BELUM TERHUBUNG</span>
+    </div>
+    <div class="ai-notice">Suara yang dihasilkan adalah suara AI. Percakapan disimpan di perangkat ini.</div>
+    <div id="aiMessages" class="ai-messages"><div class="ai-welcome"><b>Hai, aku Sairi.</b><p>Aku bisa bantu menjawab pertanyaan, menjelaskan sesuatu, dan mengobrol. Kamu juga bisa meminta balasanku dibuat menjadi Voice Note.</p></div></div>
+    <div class="ai-tools"><button type="button" class="chip" id="aiClear">Hapus percakapan</button><button type="button" class="chip" id="aiVoiceMode">Mode VN: mati</button></div>
+    <form id="aiForm" class="ai-composer">
+      <textarea id="aiInput" rows="1" maxlength="1800" placeholder="Tulis pesan untuk Sairi..."></textarea>
+      <button class="ai-send" type="submit" aria-label="Kirim"><span data-ico="send"></span></button>
     </form>
   </section>
 
@@ -219,6 +237,7 @@
   <div id="indw"><i id="ind"></i></div>
   <button class="on" data-go="home" aria-label="Beranda"><span data-ico="home"></span></button>
   <button data-go="chat" aria-label="Chat"><span data-ico="chat"></span></button>
+  <button data-go="ai" aria-label="AI Sairi"><span data-ico="ai"></span></button>
   <button data-go="yt" aria-label="YouTube"><span data-ico="yt"></span></button>
   <button data-go="eq" aria-label="Equalizer"><span data-ico="eq"></span></button>
   <button data-go="me" aria-label="Profil"><span data-ico="user"></span></button>
@@ -229,6 +248,7 @@
 <script src="gate.js"></script>
 <script src="eq.js"></script>
 <script src="chat.js"></script>
+<script src="ai.js"></script>
 <script src="yt.js"></script>
 <script src="me.js"></script>
 <script>boot();</script>

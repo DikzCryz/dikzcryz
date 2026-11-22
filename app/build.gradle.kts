@@ -28,8 +28,8 @@ android {
         applicationId = "com.dikzcryz.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "6.0"
+        versionCode = 7
+        versionName = "7.0"
         buildConfigField("String", "YT_API_KEY", "\"${secret("YT_API_KEY")}\"")
         buildConfigField("String", "SUPABASE_URL", "\"${secret("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${secret("SUPABASE_ANON_KEY")}\"")
