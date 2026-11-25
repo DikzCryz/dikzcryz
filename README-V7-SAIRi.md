@@ -9,14 +9,14 @@
 - API key AI dan suara hanya berada di server.
 
 ## Yang belum aktif otomatis
-Aplikasi belum bisa memakai AI sampai backend dipasang di hosting dan API key disiapkan. Mode percakapan suara langsung/STT, paket Premium/VIP, pembayaran, serta kuota berbayar belum termasuk tahap ini. Batas permintaan di server saat ini adalah pembatas sementara per proses, bukan sistem billing/kuota permanen.
+Aplikasi belum bisa memakai AI sampai backend dipasang di hosting dan API key disiapkan. Mode percakapan suara langsung/STT, paket Premium/VIP, pembayaran, serta kuota berbayar belum termasuk tahap ini. Batas permintaan di server saat ini adalah pembatas sementara per proses, bukan sistem billing/kuota permanen. Fallback model hanya mencoba daftar model yang dikonfigurasi dan tidak mengaktifkan billing berbayar secara otomatis. Semua model tetap berbagi project/API key Gemini yang sama dan tunduk pada kuota masing-masing.
 
 ## Menyiapkan backend
 1. Siapkan server Node.js 20+ dengan folder `server/`.
 2. Jalankan `npm install`.
 3. Salin `.env.example` menjadi `.env`.
-4. Isi `OPENAI_API_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ELEVENLABS_API_KEY`, dan `ELEVENLABS_VOICE_ID`.
-5. Jalankan `npm start`. Tes `GET /health`.
+4. Isi `GEMINI_API_KEY`, `SUPABASE_URL`, dan `SUPABASE_ANON_KEY`. Atur `GEMINI_CHAT_MODEL` serta `GEMINI_FALLBACK_MODELS` hanya dengan model ID yang tersedia pada project Google AI Studio milikmu. ElevenLabs opsional: isi `ELEVENLABS_API_KEY` dan `ELEVENLABS_VOICE_ID` jika fitur VN akan dipakai.
+5. Jalankan `npm start`. Tes `GET /health`; respons menunjukkan apakah AI dan layanan suara sudah dikonfigurasi tanpa membocorkan kredensial.
 6. Deploy server ke hosting HTTPS. Jangan mengunggah file `.env`.
 7. Di aplikasi DikzCryz buka Menu > Pengaturan, isi alamat HTTPS backend AI, lalu Simpan.
 
